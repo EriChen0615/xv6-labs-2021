@@ -1,6 +1,10 @@
 from __future__ import print_function
 
+<<<<<<< HEAD
 import sys, os, re, time, socket, select, subprocess, errno, shutil, random, string, json
+=======
+import sys, os, re, time, socket, select, subprocess, errno, shutil, random, string
+>>>>>>> 08e781eea728eff222a5128c3f2662070cf194cf
 from subprocess import check_call, Popen
 from optparse import OptionParser
 
@@ -16,7 +20,10 @@ TESTS = []
 TOTAL = POSSIBLE = 0
 PART_TOTAL = PART_POSSIBLE = 0
 CURRENT_TEST = None
+<<<<<<< HEAD
 GRADES = {}
+=======
+>>>>>>> 08e781eea728eff222a5128c3f2662070cf194cf
 
 def test(points, title=None, parent=None):
     """Decorator for declaring test functions.  If title is None, the
@@ -32,7 +39,11 @@ def test(points, title=None, parent=None):
             title = "  " + title
 
         def run_test():
+<<<<<<< HEAD
             global TOTAL, POSSIBLE, CURRENT_TEST, GRADES
+=======
+            global TOTAL, POSSIBLE, CURRENT_TEST
+>>>>>>> 08e781eea728eff222a5128c3f2662070cf194cf
 
             # Handle test dependencies
             if run_test.complete:
@@ -69,9 +80,12 @@ def test(points, title=None, parent=None):
                 print("    %s" % fail.replace("\n", "\n    "))
             else:
                 TOTAL += points
+<<<<<<< HEAD
             if points:
                 GRADES[title] = 0 if fail else points
 
+=======
+>>>>>>> 08e781eea728eff222a5128c3f2662070cf194cf
             for callback in run_test.on_finish:
                 callback(fail)
             CURRENT_TEST = None
@@ -99,6 +113,7 @@ def end_part(name):
     show_part.title = ""
     TESTS.append(show_part)
 
+<<<<<<< HEAD
 def write_results():
     global options
     if not options.results:
@@ -109,6 +124,8 @@ def write_results():
     except OSError as e:
         print("Provided a bad results path. Error:", e)
 
+=======
+>>>>>>> 08e781eea728eff222a5128c3f2662070cf194cf
 def run_tests():
     """Set up for testing and run the registered test functions."""
 
@@ -119,7 +136,10 @@ def run_tests():
                       help="print commands")
     parser.add_option("--color", choices=["never", "always", "auto"],
                       default="auto", help="never, always, or auto")
+<<<<<<< HEAD
     parser.add_option("--results", help="results file path")
+=======
+>>>>>>> 08e781eea728eff222a5128c3f2662070cf194cf
     (options, args) = parser.parse_args()
 
     # Start with a full build to catch build errors
@@ -135,7 +155,10 @@ def run_tests():
             if not limit or any(l in test.title.lower() for l in limit):
                 test()
         if not limit:
+<<<<<<< HEAD
             write_results()
+=======
+>>>>>>> 08e781eea728eff222a5128c3f2662070cf194cf
             print("Score: %d/%d" % (TOTAL, POSSIBLE))
     except KeyboardInterrupt:
         pass
@@ -276,7 +299,10 @@ def check_time():
 
 def check_answers(file, n=10):
     try:
+<<<<<<< HEAD
         print("")
+=======
+>>>>>>> 08e781eea728eff222a5128c3f2662070cf194cf
         with open(file) as f:
             d = f.read().strip()
             if len(d) < n:

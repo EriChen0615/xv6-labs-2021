@@ -67,6 +67,32 @@ usertrap(void)
     syscall();
   } else if((which_dev = devintr()) != 0){
     // ok
+  } else if(r_scause() == 15){ //JC: a page fault occurs
+    printf("a page fault occurs!\n");
+    char *mem;
+    uint64 a, va, pa;
+    uint flags;
+
+    if((mem = kalloc()) == 0){
+      panic("usertrap(): cannot allocate more memory in handling page fault");
+      p->killed = 1;
+    }
+
+    a = r_stval(); // JC: the faulting virtual address
+    va = PGROUNDDOWN(a); 
+    pa = walkaddr(p->pagetable, va);
+    memmove(mem, (char*)pa, PGSIZE);  //JC: copy the page to new address
+
+    uvmunmap(p->pagetable, va, 1, 0); //JC: unmap, but do not free the physical page as it's used by the parent.
+    if(mappages(p->pagetable, va, PGSIZE, (uint64)mem, PTE_V|PTE_R|PTE_W|PTE_U) != 0){
+      kfree(mem);
+      panic("usertrap(): mappages for child");
+      p->killed = 1;
+    }
+
+    //JC: set the parent's and child's PTE_W flag back by unmapping and then mapping
+    uvmunmap(p->parent->pagetable, va, 1, 0);
+    mappages(p->parent->pagetable, va, PGSIZE, pa, PTE_V|PTE_R|PTE_W|PTE_U);
   } else {
     printf("usertrap(): unexpected scause %p pid=%d\n", r_scause(), p->pid);
     printf("            sepc=%p stval=%p\n", r_sepc(), r_stval());

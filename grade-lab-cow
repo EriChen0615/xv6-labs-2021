@@ -28,8 +28,13 @@ def test_file():
 @test(0, "usertests")
 def test_usertests():
     r.run_qemu(shell_script([
+<<<<<<< HEAD
         'usertests -q'
     ]), timeout=1000)
+=======
+        'usertests'
+    ]), timeout=300)
+>>>>>>> 08e781eea728eff222a5128c3f2662070cf194cf
     r.match('^ALL TESTS PASSED$')
 
 def usertest_check(testcase, nextcase, output):
