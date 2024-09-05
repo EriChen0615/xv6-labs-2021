@@ -16,6 +16,8 @@ void kernelvec();
 
 extern int devintr();
 
+int cow_handler(void);
+
 void
 trapinit(void)
 {
@@ -67,35 +69,18 @@ usertrap(void)
     syscall();
   } else if((which_dev = devintr()) != 0){
     // ok
-  } else if(r_scause() == 15){ //JC: a page fault occurs
-    printf("a page fault occurs!\n");
-    char *mem;
-    uint64 a, va, pa;
-    uint flags;
-
-    if((mem = kalloc()) == 0){
-      panic("usertrap(): cannot allocate more memory in handling page fault");
-      p->killed = 1;
+  } else if(r_scause() == 13 || r_scause() == 15 && uvmcheckcowpage(r_stval())){ //JC: a page fault occurs
+    if(uvmcowcopy(r_stval()) == -1){ // 如果内存不足，则杀死进程
+        p->killed = 1;
     }
-
-    a = r_stval(); // JC: the faulting virtual address
-    va = PGROUNDDOWN(a); 
-    pa = walkaddr(p->pagetable, va);
-    memmove(mem, (char*)pa, PGSIZE);  //JC: copy the page to new address
-
-    uvmunmap(p->pagetable, va, 1, 0); //JC: unmap, but do not free the physical page as it's used by the parent.
-    if(mappages(p->pagetable, va, PGSIZE, (uint64)mem, PTE_V|PTE_R|PTE_W|PTE_U) != 0){
-      kfree(mem);
-      panic("usertrap(): mappages for child");
-      p->killed = 1;
-    }
-
-    //JC: set the parent's and child's PTE_W flag back by unmapping and then mapping
-    uvmunmap(p->parent->pagetable, va, 1, 0);
-    mappages(p->parent->pagetable, va, PGSIZE, pa, PTE_V|PTE_R|PTE_W|PTE_U);
   } else {
     printf("usertrap(): unexpected scause %p pid=%d\n", r_scause(), p->pid);
     printf("            sepc=%p stval=%p\n", r_sepc(), r_stval());
+    //NOTE JC: debug
+    // uint64 a = r_stval(); // JC: the faulting virtual address
+    // uint64 va = PGROUNDDOWN(a); 
+    // uint64 pa = walkaddr(p->pagetable, va);
+    // printf("Faulting physical address %p\n", pa);
     setkilled(p);
   }
 
@@ -245,3 +230,48 @@ devintr()
   }
 }
 
+// int
+// cow_handler(void){
+//     char *mem;
+//     uint64 a, va, pa;
+//     uint flags;
+//     pte_t *pte, *parent_pte;
+//     // uint flags;
+//     struct proc *p = myproc();
+
+//     a = r_stval(); // JC: the faulting virtual address
+//     printf("JC. Faulting address: %p\n", a);
+//     va = PGROUNDDOWN(a); 
+//     pte = walk(p->pagetable, va, 0);
+//     flags = PTE_FLAGS(*pte);
+
+//     if(*pte & PTE_RSW){
+//       if((mem = kalloc()) == 0){
+//         panic("usertrap(): cannot allocate more memory in handling page fault");
+//         p->killed = 1;
+//         return -1;
+//       }
+//       pa = walkaddr(p->pagetable, va);
+//       memmove(mem, (char*)pa, PGSIZE);  //JC: copy the page to new address
+
+//       uvmunmap(p->pagetable, va, 1, 0); //JC: unmap, but do not free the physical page as it's used by the parent.
+//       flags |= PTE_W;
+//       flags &= ~PTE_RSW;
+//       if(mappages(p->pagetable, va, PGSIZE, (uint64)mem, flags) != 0){
+//         kfree(mem);
+//         panic("usertrap(): mappages for child");
+//         p->killed = 1;
+//         return -1;
+//       }
+//       printf("JC. va: %p allocated to new page %p\n", va, mem);
+//       printf("JC. check mapped pa: %p\n", walkaddr(p->pagetable, va));
+
+//       //JC: set the parent's and child's PTE_W flag back by unmapping and then mapping
+//       // parent_pte = walk(p->parent->pagetable, va, 0);
+//       // *parent_pte = *parent_pte | PTE_W;
+//       // *parent_pte = *parent_pte & ~PTE_RSW;
+//       // uvmunmap(p->parent->pagetable, va, 1, 0);
+//       // mappages(p->parent->pagetable, va, PGSIZE, pa, PTE_V|PTE_R|PTE_W|PTE_U); 
+//     }
+//     return 0;
+// }

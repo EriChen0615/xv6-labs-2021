@@ -1,9 +1,5 @@
 
-<<<<<<< HEAD
 # To compile and run with a lab solution, set the lab name in conf/lab.mk
-=======
-# To compile and run with a lab solution, set the lab name in lab.mk
->>>>>>> 08e781eea728eff222a5128c3f2662070cf194cf
 # (e.g., LAB=util).  Run make grade to test solution with the lab's
 # grade script (e.g., grade-lab-util).
 
@@ -90,11 +86,7 @@ LD = $(TOOLPREFIX)ld
 OBJCOPY = $(TOOLPREFIX)objcopy
 OBJDUMP = $(TOOLPREFIX)objdump
 
-<<<<<<< HEAD
-CFLAGS = -Wall -Werror -O -fno-omit-frame-pointer -ggdb -gdwarf-2
-=======
-CFLAGS = -Wall -Werror -O -fno-omit-frame-pointer -ggdb -Wno-error=infinite-recursion -Wno-error=unused-variable
->>>>>>> 08e781eea728eff222a5128c3f2662070cf194cf
+CFLAGS = -Wall -Werror -O -fno-omit-frame-pointer -ggdb -Wno-error=unused-variable
 
 ifdef LAB
 LABUPPER = $(shell echo $(LAB) | tr a-z A-Z)
@@ -284,10 +276,7 @@ clean:
 	mkfs/mkfs .gdbinit \
         $U/usys.S \
 	$(UPROGS) \
-<<<<<<< HEAD
 	*.zip \
-=======
->>>>>>> 08e781eea728eff222a5128c3f2662070cf194cf
 	ph barrier
 
 # try to generate a unique GDB port
@@ -354,28 +343,10 @@ grade:
 	./grade-lab-$(LAB) $(GRADEFLAGS)
 
 ##
-<<<<<<< HEAD
 ## FOR submissions
 ##
 
 submit-check:
-=======
-## FOR web handin
-##
-
-
-WEBSUB := https://6828.scripts.mit.edu/2021/handin.py
-
-handin: tarball-pref myapi.key
-	@SUF=$(LAB); \
-	curl -f -F file=@lab-$$SUF-handin.tar.gz -F key=\<myapi.key $(WEBSUB)/upload \
-	    > /dev/null || { \
-		echo ; \
-		echo Submit seems to have failed.; \
-		echo Please go to $(WEBSUB)/ and upload the tarball manually.; }
-
-handin-check:
->>>>>>> 08e781eea728eff222a5128c3f2662070cf194cf
 	@if ! test -d .git; then \
 		echo No .git directory, is this a git repository?; \
 		false; \
@@ -397,44 +368,7 @@ handin-check:
 		test "$$r" = y; \
 	fi
 
-<<<<<<< HEAD
 zipball: clean submit-check
 	git archive --verbose --format zip --output lab.zip HEAD
 
 .PHONY: zipball clean grade submit-check
-=======
-UPSTREAM := $(shell git remote -v | grep -m 1 "xv6-labs-2021" | awk '{split($$0,a," "); print a[1]}')
-
-tarball: handin-check
-	git archive --format=tar HEAD | gzip > lab-$(LAB)-handin.tar.gz
-
-tarball-pref: handin-check
-	@SUF=$(LAB); \
-	git archive --format=tar HEAD > lab-$$SUF-handin.tar; \
-	git diff $(UPSTREAM)/$(LAB) > /tmp/lab-$$SUF-diff.patch; \
-	tar -rf lab-$$SUF-handin.tar /tmp/lab-$$SUF-diff.patch; \
-	gzip -c lab-$$SUF-handin.tar > lab-$$SUF-handin.tar.gz; \
-	rm lab-$$SUF-handin.tar; \
-	rm /tmp/lab-$$SUF-diff.patch; \
-
-myapi.key:
-	@echo Get an API key for yourself by visiting $(WEBSUB)/
-	@read -p "Please enter your API key: " k; \
-	if test `echo "$$k" |tr -d '\n' |wc -c` = 32 ; then \
-		TF=`mktemp -t tmp.XXXXXX`; \
-		if test "x$$TF" != "x" ; then \
-			echo "$$k" |tr -d '\n' > $$TF; \
-			mv -f $$TF $@; \
-		else \
-			echo mktemp failed; \
-			false; \
-		fi; \
-	else \
-		echo Bad API key: $$k; \
-		echo An API key should be 32 characters long.; \
-		false; \
-	fi;
-
-
-.PHONY: handin tarball tarball-pref clean grade handin-check
->>>>>>> 08e781eea728eff222a5128c3f2662070cf194cf
