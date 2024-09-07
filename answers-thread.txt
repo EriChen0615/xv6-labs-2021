@@ -1,0 +1,5 @@
+A key miss can happen when:
+- Both Thread 1 and Thread 2 are in the middle of inserting a key, at the same time,
+- Thread 1 updates the head of the linked list to its newly created entry. 
+- Thread 2 updates the head of the linked list to its new created entry, overwriting Thread 1's update. 
+The total effect is that Thread 1's update to the hashtable is lost.
